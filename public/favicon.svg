@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#c0562f"/>
+      <stop offset="1" stop-color="#9c3f22"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <!-- steam -->
+  <g stroke="#f7e9d8" stroke-width="12" stroke-linecap="round" fill="none" opacity="0.85">
+    <path d="M206 150 q-18 -22 0 -44 q18 -22 0 -44"/>
+    <path d="M256 140 q-18 -22 0 -44 q18 -22 0 -44"/>
+    <path d="M306 150 q-18 -22 0 -44 q18 -22 0 -44"/>
+  </g>
+  <!-- kadai / bowl -->
+  <path d="M120 224 h272 a136 136 0 0 1 -272 0 Z" fill="#f7e9d8"/>
+  <path d="M120 224 h272 a136 136 0 0 1 -272 0 Z" fill="none" stroke="#3a2a20" stroke-width="10" opacity="0.15"/>
+  <!-- handles -->
+  <rect x="66" y="238" width="60" height="22" rx="11" fill="#f7e9d8"/>
+  <rect x="386" y="238" width="60" height="22" rx="11" fill="#f7e9d8"/>
+  <!-- content dots -->
+  <circle cx="212" cy="290" r="13" fill="#2f9e6f"/>
+  <circle cx="256" cy="308" r="13" fill="#e0a92e"/>
+  <circle cx="300" cy="290" r="13" fill="#c0562f"/>
+</svg>
