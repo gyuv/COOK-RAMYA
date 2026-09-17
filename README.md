@@ -79,4 +79,14 @@ src/
 
 ---
 
+---
+
+## Motion & micro-interactions
+
+An original premium-motion layer (CSS + IntersectionObserver, all my own — not copied from any UI kit) with **30+ animations**, each gated on `prefers-reduced-motion` and the in-app "Reduce motion" toggle:
+
+1. Page/section fade-up entrance · 2. Scroll-reveal (IntersectionObserver) · 3. Staggered grid children · 4. Horizontal card-row reveal · 5. Card image zoom-on-hover · 6. Card title colour shift · 7. Card 3D tilt/lift · 8. Save-heart pop · 9. Save-heart burst · 10. Save hover scale · 11. Button light sheen · 12. Button ripple · 13. Chip press scale · 14. Animated link underline · 15. Section-header link underline · 16. Hero floating blobs · 17. Hero gradient-text shimmer · 18. Type-cycle rotating dish name · 19. Trending marquee ticker · 20. Count-up stats · 21. Top scroll-progress bar · 22. Cursor-follow spotlight glow · 23. Bottom-nav active bounce · 24. "Why this step?" accordion expand · 25. Start-Cooking CTA gradient glow · 26. Serving-quantity flash on change · 27. Mise-en-place check pop · 28. Timer finished pulse-ring · 29. Timer progress fill · 30. Toast slide-in · 31. Modal/bottom-sheet slide-up · 32. Skeleton shimmer · 33. Loading spinner.
+
+---
+
 Tagline: **From Amma's kitchen to your screen.** · _Search anything. Learn anything. Cook anything._

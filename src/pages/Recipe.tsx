@@ -85,7 +85,7 @@ export default function Recipe() {
 
           {/* CTAs */}
           <div className="row wrap gap8" style={{ marginTop: 18 }}>
-            <Link to={`/guided/${recipe.slug}`} className="btn btn-primary btn-lg" onClick={() => useStore.getState().startSession(recipe.id, servings)}>▶ Start Cooking</Link>
+            <Link to={`/guided/${recipe.slug}`} className="btn btn-primary btn-lg btn-glow" onClick={() => useStore.getState().startSession(recipe.id, servings)}>▶ Start Cooking</Link>
             <button className="btn btn-ghost" onClick={() => { addRecipeToShopping(recipe.id, servings); toast('Ingredients added to shopping list'); }}>🛒 Shopping list</button>
             <button className="btn btn-ghost" onClick={() => setMealModal(true)}>📅 Add to meal plan</button>
             <button className="btn btn-ghost" onClick={() => { navigator.clipboard?.writeText(location.href).then(() => toast('Link copied'), () => toast('Copy not available')); }}>↗ Share</button>
@@ -122,7 +122,7 @@ export default function Recipe() {
                     <li key={group + i}>
                       <button onClick={() => setIngModal(ing.item)} style={{ width: '100%', display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', padding: '10px 8px', border: 'none', borderBottom: '1px solid var(--line)', background: 'transparent', cursor: 'pointer', textAlign: 'left' }}>
                         <span className="row gap8"><span style={{ width: 30, height: 30, borderRadius: 8, overflow: 'hidden', flexShrink: 0 }}><FoodArt art="other" seed={ing.item} /></span><span style={{ fontSize: '0.95rem' }}>{ing.item}{ing.note ? <span className="muted"> · {ing.note}</span> : null}</span></span>
-                        <span style={{ fontWeight: 600, whiteSpace: 'nowrap', color: ing.looselyScaled ? 'var(--ink-3)' : 'var(--ink)' }}>{ing.displayQty} {ing.unit}{ing.qty == null ? 'to taste' : ''}</span>
+                        <span key={`${servings}-${ing.displayQty}`} className="qty-flash" style={{ fontWeight: 600, whiteSpace: 'nowrap', padding: '2px 6px', color: ing.looselyScaled ? 'var(--ink-3)' : 'var(--ink)' }}>{ing.displayQty} {ing.unit}{ing.qty == null ? 'to taste' : ''}</span>
                       </button>
                     </li>
                   ))}

@@ -92,7 +92,7 @@ export default function GuidedCooking() {
                 return (
                   <li key={key}>
                     <button onClick={() => toggleChecklist(key)} style={{ width: '100%', display: 'flex', gap: 10, alignItems: 'center', padding: '10px 4px', border: 'none', borderBottom: '1px solid var(--line)', background: 'transparent', cursor: 'pointer', textAlign: 'left' }}>
-                      <span style={{ width: 22, height: 22, borderRadius: 6, border: `2px solid ${done ? 'var(--green)' : 'var(--line-2)'}`, background: done ? 'var(--green)' : 'transparent', color: '#fff', display: 'grid', placeItems: 'center', flexShrink: 0, fontSize: '0.8rem' }}>{done ? '✓' : ''}</span>
+                      <span style={{ width: 22, height: 22, borderRadius: 6, border: `2px solid ${done ? 'var(--green)' : 'var(--line-2)'}`, background: done ? 'var(--green)' : 'transparent', color: '#fff', display: 'grid', placeItems: 'center', flexShrink: 0, fontSize: '0.8rem', animation: done ? 'checkPop 0.3s var(--ease)' : undefined }}>{done ? '✓' : ''}</span>
                       <span style={{ flex: 1, textDecoration: done ? 'line-through' : 'none', color: done ? 'var(--ink-3)' : 'var(--ink)' }}>{ing.item}{ing.note ? <span className="muted"> · {ing.note}</span> : null}</span>
                       <strong style={{ whiteSpace: 'nowrap' }}>{ing.displayQty} {ing.unit}{ing.qty == null ? 'to taste' : ''}</strong>
                     </button>

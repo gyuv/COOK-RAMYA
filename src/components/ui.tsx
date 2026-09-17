@@ -69,7 +69,7 @@ export function Modal({ open, onClose, title, children, wide }: { open: boolean;
   return (
     <div role="dialog" aria-modal="true" aria-label={title} onMouseDown={(e) => { if (e.target === ref.current) onClose(); }} ref={ref}
       style={{ position: 'fixed', inset: 0, background: 'rgba(43,35,32,0.42)', backdropFilter: 'blur(2px)', zIndex: 100, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-      <div className="fade-up" style={{ background: 'var(--surface)', width: '100%', maxWidth: wide ? 720 : 520, maxHeight: '88vh', overflowY: 'auto', borderRadius: '22px 22px 0 0', boxShadow: 'var(--shadow-lg)' }}>
+      <div style={{ animation: 'sheetUp 0.34s var(--ease)', background: 'var(--surface)', width: '100%', maxWidth: wide ? 720 : 520, maxHeight: '88vh', overflowY: 'auto', borderRadius: '22px 22px 0 0', boxShadow: 'var(--shadow-lg)' }}>
         <div style={{ position: 'sticky', top: 0, background: 'var(--surface)', padding: '16px 18px', borderBottom: '1px solid var(--line)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 2 }}>
           <h3 style={{ fontSize: '1.2rem' }}>{title}</h3>
           <button aria-label="Close" onClick={onClose} className="btn btn-ghost" style={{ padding: '6px 12px' }}>✕</button>
@@ -97,7 +97,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
       <div style={{ position: 'fixed', left: '50%', transform: 'translateX(-50%)', bottom: 'calc(var(--nav-h) + 16px)', zIndex: 200, display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center', pointerEvents: 'none' }} aria-live="polite">
         {toasts.map((t) => (
-          <div key={t.id} className="fade-up" style={{ background: 'var(--ink)', color: '#fff', padding: '11px 18px', borderRadius: 999, fontSize: '0.9rem', fontWeight: 500, boxShadow: 'var(--shadow-lg)', maxWidth: '90vw' }}>{t.msg}</div>
+          <div key={t.id} style={{ animation: 'toastIn 0.32s var(--ease)', background: 'var(--ink)', color: '#fff', padding: '11px 18px', borderRadius: 999, fontSize: '0.9rem', fontWeight: 500, boxShadow: 'var(--shadow-lg)', maxWidth: '90vw' }}>{t.msg}</div>
         ))}
       </div>
     </ToastCtx.Provider>

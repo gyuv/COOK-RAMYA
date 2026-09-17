@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { Recipe, Product, Region, Technique } from '../data/types';
 import { FoodArt } from './FoodArt';
@@ -6,18 +7,26 @@ import { DietDot } from './ui';
 import { useStore } from '../store/useStore';
 import { useToast } from './ui';
 import { formatMinutes } from '../hooks/useTick';
+import { Reveal } from './Reveal';
 
 export function SaveButton({ id, name }: { id: string; name?: string }) {
   const saved = useStore((s) => s.saved.includes(id));
   const toggle = useStore((s) => s.toggleSave);
   const toast = useToast();
+  const [burst, setBurst] = useState(false);
   return (
     <button
       className={`save-btn ${saved ? 'saved' : ''}`}
       aria-pressed={saved}
       aria-label={saved ? `Remove ${name ?? 'recipe'} from saved` : `Save ${name ?? 'recipe'}`}
-      onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggle(id); toast(saved ? 'Removed from saved' : 'Saved to your cookbook'); }}
+      onClick={(e) => {
+        e.preventDefault(); e.stopPropagation();
+        if (!saved) { setBurst(true); window.setTimeout(() => setBurst(false), 520); }
+        toggle(id);
+        toast(saved ? 'Removed from saved' : 'Saved to your cookbook');
+      }}
     >
+      {burst && <span className="heart-burst" aria-hidden="true" />}
       {saved ? '♥' : '♡'}
     </button>
   );
@@ -112,7 +121,8 @@ export function TechniqueCard({ technique }: { technique: Technique }) {
   );
 }
 
-// Horizontal scroller wrapper for card rows.
+// Horizontal scroller wrapper for card rows — reveals and staggers its cards
+// as it scrolls into view.
 export function Scroller({ children }: { children: React.ReactNode }) {
-  return <div className="hscroll">{children}</div>;
+  return <Reveal as="div" className="hscroll" stagger>{children}</Reveal>;
 }
