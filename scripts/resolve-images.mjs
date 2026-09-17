@@ -23,6 +23,23 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // User-Agent — without one the API returns 403 and nothing resolves.
 const UA = 'RAMYA-COOK-image-resolver/1.0 (+https://github.com/gyuv/COOK-RAMYA)';
 const getJSON = (url) => fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' } }).then((r) => r.json());
+
+// One-time diagnostic probe so a single CI run reveals exactly what the APIs
+// return (status + body snippet). Remove once resolution works.
+async function probe() {
+  for (const [label, url] of [
+    ['TheMealDB', 'https://www.themealdb.com/api/json/v1/1/search.php?s=Dosa'],
+    ['Commons',  'https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrsearch=' + encodeURIComponent('Dosa food') + '&gsrlimit=3&prop=imageinfo&iiprop=url&iiurlwidth=800&format=json'],
+  ]) {
+    try {
+      const r = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' } });
+      const body = await r.text();
+      console.log(`PROBE ${label}: HTTP ${r.status} ${r.headers.get('content-type')} | ${body.slice(0, 300).replace(/\s+/g, ' ')}`);
+    } catch (e) {
+      console.log(`PROBE ${label}: THREW ${e}`);
+    }
+  }
+}
 const STOP = new Set(['style', 'the', 'a', 'with', 'and', 'of', 'dish', 'india', 'indian', 'food', 'special', 'classic', 'home', 'hotel', 'restaurant']);
 
 const tokens = (name) =>
@@ -92,6 +109,8 @@ const jobs = [
   ...loadRegionsFestivals().map((x) => ({ ...x, kind: 'place' })),
   ...loadIngredients().map((x) => ({ ...x, kind: 'ingredient' })),
 ];
+
+await probe();
 
 const out = {};
 let ok = 0;
