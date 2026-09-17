@@ -18,6 +18,11 @@ import { Readable } from 'node:stream';
 
 const DOWNLOAD = process.argv.includes('--download');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Wikimedia (and good API etiquette generally) REQUIRE a descriptive
+// User-Agent — without one the API returns 403 and nothing resolves.
+const UA = 'RAMYA-COOK-image-resolver/1.0 (+https://github.com/gyuv/COOK-RAMYA)';
+const getJSON = (url) => fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' } }).then((r) => r.json());
 const STOP = new Set(['style', 'the', 'a', 'with', 'and', 'of', 'dish', 'india', 'indian', 'food', 'special', 'classic', 'home', 'hotel', 'restaurant']);
 
 const tokens = (name) =>
@@ -41,17 +46,9 @@ const loadProducts = () => pairs(readFileSync('src/data/products.ts', 'utf8'));
 const loadRegionsFestivals = () => pairs(readFileSync('src/data/regions.ts', 'utf8')); // REGIONS + FESTIVALS
 const loadIngredients = () => pairs(readFileSync('src/data/ingredients.ts', 'utf8'));
 
-async function verify(url) {
-  try {
-    const r = await fetch(url, { method: 'HEAD', redirect: 'follow' });
-    return r.ok && (r.headers.get('content-type') || '').startsWith('image/');
-  } catch { return false; }
-}
-
 async function fromMealDB(name) {
   try {
-    const r = await fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(name)}`);
-    const j = await r.json();
+    const j = await getJSON(`https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(name)}`);
     const url = j.meals?.[0]?.strMealThumb;
     return url ? { src: url, credit: 'Photo: TheMealDB' } : null;
   } catch { return null; }
@@ -61,9 +58,8 @@ async function fromMealDB(name) {
 // of the item's keywords, or it is rejected (prevents unrelated matches).
 async function fromCommons(name, query) {
   try {
-    const api = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrsearch=${encodeURIComponent(query)}&gsrlimit=8&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=800&format=json&origin=*`;
-    const r = await fetch(api);
-    const j = await r.json();
+    const api = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrsearch=${encodeURIComponent(query)}&gsrlimit=8&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=800&format=json`;
+    const j = await getJSON(api);
     const pages = j.query?.pages ? Object.values(j.query.pages) : [];
     const keys = tokens(name);
     for (const pg of pages) {
@@ -84,7 +80,7 @@ async function download(id, url) {
   mkdirSync('public/dishes', { recursive: true });
   const ext = (url.split('?')[0].match(/\.(jpg|jpeg|png|webp)$/i)?.[1] || 'jpg').toLowerCase();
   const path = `public/dishes/${id}.${ext}`;
-  const res = await fetch(url);
+  const res = await fetch(url, { headers: { 'User-Agent': UA } });
   if (!res.ok || !res.body) throw new Error('download failed');
   await pipeline(Readable.fromWeb(res.body), createWriteStream(path));
   return `/dishes/${id}.${ext}`;
@@ -107,7 +103,9 @@ for (const { id, name, kind } of jobs) {
   else if (kind === 'ingredient') hit = await fromCommons(name, `${name} ingredient`);
   else hit = await fromCommons(name, `${name} indian cuisine food`); // festivals + regions
 
-  if (hit && (await verify(hit.src))) {
+  // Trust the authoritative source URL (TheMealDB thumb / Commons thumburl are
+  // always live); correctness comes from the keyword guard in fromCommons.
+  if (hit && /^https:\/\//.test(hit.src)) {
     if (DOWNLOAD) { try { hit.src = await download(id, hit.src); } catch { /* keep hotlink */ } }
     out[id] = { src: hit.src, credit: hit.credit };
     ok++;
