@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { ingredientByName } from '../data/ingredients';
 import { RECIPES } from '../data/recipes';
 import { FoodArt } from './FoodArt';
+import { DishImage } from './DishImage';
 
 // Ingredient intelligence (section 16 / 20). Renders full detail when we know
 // the ingredient, and a graceful minimal panel when we don't.
@@ -30,7 +31,7 @@ export function IngredientPanel({ name }: { name: string }) {
   return (
     <div>
       <div className="row gap12" style={{ marginBottom: 6 }}>
-        <div style={{ width: 60, height: 60, borderRadius: 12, overflow: 'hidden', flexShrink: 0 }}><FoodArt art={info.art} seed={info.id} /></div>
+        <div style={{ width: 60, height: 60, borderRadius: 12, overflow: 'hidden', flexShrink: 0 }}><DishImage id={info.id} art={info.art} seed={info.id} alt={info.name} name={info.name} /></div>
         <div>
           <h3 style={{ fontSize: '1.25rem' }}>{info.name}</h3>
           <span className="pill" style={{ marginTop: 4 }}>{info.kind}</span>

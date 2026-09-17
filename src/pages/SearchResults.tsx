@@ -3,6 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { search } from '../lib/search';
 import { RecipeCard, ProductCard, TechniqueCard } from '../components/cards';
 import { FoodArt } from '../components/FoodArt';
+import { DishImage } from '../components/DishImage';
 import { EmptyState, SectionHead } from '../components/ui';
 import { useSeo } from '../hooks/useSeo';
 import { recipeById } from '../data/recipes';
@@ -66,7 +67,7 @@ export default function SearchResults() {
               <div className="grid grid-auto">
                 {results.ingredients.map((i) => (
                   <Link key={i.id} to={`/ingredients/${i.slug}`} className="recipe-card">
-                    <div className="thumb" style={{ aspectRatio: '4 / 3' }}><FoodArt art={i.art} seed={i.id} /></div>
+                    <div className="thumb" style={{ aspectRatio: '4 / 3' }}><DishImage id={i.id} art={i.art} seed={i.id} alt={i.title} name={i.title} /></div>
                     <div className="rc-body"><div className="rc-title" style={{ fontSize: '0.98rem' }}>{i.title}</div><div className="muted" style={{ fontSize: '0.8rem' }}>{i.subtitle}</div></div>
                   </Link>
                 ))}

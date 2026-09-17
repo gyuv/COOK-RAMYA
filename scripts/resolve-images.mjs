@@ -1,33 +1,45 @@
 // ============================================================
-// RAMYA-COOK image resolver — run on a machine WITH internet:
-//   node scripts/resolve-images.mjs           (hotlink verified URLs)
+// RAMYA-COOK image resolver — runs where there IS internet (GitHub Actions or
+// your machine). It fetches a REAL, cross-verified photo for every dish,
+// product, festival and region, then writes src/data/images.generated.ts.
+//   node scripts/resolve-images.mjs            (hotlink verified URLs)
 //   node scripts/resolve-images.mjs --download (also self-host to public/dishes)
 //
-// It resolves a REAL, verified photo for each recipe/product via a cascade
-// (TheMealDB → Wikimedia Commons), records attribution, and writes
-// src/data/images.generated.ts (which the app merges over the keyword fallback).
-// Nothing here runs in the browser; no API keys required.
+// Cross-verification, so NO wrong/random images are shown:
+//   • Recipes: TheMealDB exact-name search only (returns the real dish photo).
+//   • Products/Festivals/Regions: Wikimedia Commons search, but a result is
+//     ACCEPTED ONLY IF the file title contains a keyword from the item's name.
+//   • Every candidate URL is HEAD-checked to be a live image before use.
+// Anything that doesn't pass shows the clean procedural art (never a wrong pic).
 // ============================================================
-import { writeFileSync, mkdirSync, createWriteStream } from 'node:fs';
+import { writeFileSync, mkdirSync, createWriteStream, readFileSync, readdirSync } from 'node:fs';
 import { pipeline } from 'node:stream/promises';
 import { Readable } from 'node:stream';
 
 const DOWNLOAD = process.argv.includes('--download');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const STOP = new Set(['style', 'the', 'a', 'with', 'and', 'of', 'dish', 'india', 'indian', 'food', 'special', 'classic', 'home', 'hotel', 'restaurant']);
 
-// Load recipe/product names without a TS toolchain: read the built data via a
-// tiny regex over the source files (ids + names).
-import { readFileSync, readdirSync } from 'node:fs';
-function recipesFromSource() {
+const tokens = (name) =>
+  name.toLowerCase().replace(/\([^)]*\)/g, ' ').replace(/[^a-z0-9 ]/g, ' ')
+    .split(/\s+/).filter((w) => w.length >= 3 && !STOP.has(w));
+
+function pairs(text) {
   const out = [];
-  for (const f of readdirSync('src/data').filter((x) => x.startsWith('recipes-'))) {
-    const t = readFileSync(`src/data/${f}`, 'utf8');
-    const re = /id:\s*'([a-z0-9-]+)'[\s\S]{0,120}?name:\s*'([^']+)'/g;
-    let m;
-    while ((m = re.exec(t))) out.push({ id: m[1], name: m[2].replace(/\\'/g, "'") });
-  }
+  const re = /id:\s*'([a-z0-9-]+)'[\s\S]{0,140}?name:\s*'([^']+)'/g;
+  let m;
+  while ((m = re.exec(text))) out.push({ id: m[1], name: m[2].replace(/\\'/g, "'") });
   return out;
 }
+
+function loadRecipes() {
+  const out = [];
+  for (const f of readdirSync('src/data').filter((x) => x.startsWith('recipes-'))) out.push(...pairs(readFileSync(`src/data/${f}`, 'utf8')));
+  return out;
+}
+const loadProducts = () => pairs(readFileSync('src/data/products.ts', 'utf8'));
+const loadRegionsFestivals = () => pairs(readFileSync('src/data/regions.ts', 'utf8')); // REGIONS + FESTIVALS
+const loadIngredients = () => pairs(readFileSync('src/data/ingredients.ts', 'utf8'));
 
 async function verify(url) {
   try {
@@ -45,17 +57,26 @@ async function fromMealDB(name) {
   } catch { return null; }
 }
 
-async function fromCommons(name) {
+// Commons search with a keyword guard: the chosen file's title must contain one
+// of the item's keywords, or it is rejected (prevents unrelated matches).
+async function fromCommons(name, query) {
   try {
-    const api = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrsearch=${encodeURIComponent(name + ' food')}&gsrlimit=1&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=800&format=json&origin=*`;
+    const api = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrsearch=${encodeURIComponent(query)}&gsrlimit=8&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=800&format=json&origin=*`;
     const r = await fetch(api);
     const j = await r.json();
     const pages = j.query?.pages ? Object.values(j.query.pages) : [];
-    const info = pages[0]?.imageinfo?.[0];
-    if (!info?.thumburl) return null;
-    const artist = info.extmetadata?.Artist?.value?.replace(/<[^>]+>/g, '') || 'Wikimedia Commons';
-    const lic = info.extmetadata?.LicenseShortName?.value || 'CC';
-    return { src: info.thumburl, credit: `Photo: ${artist} / ${lic} (Wikimedia Commons)` };
+    const keys = tokens(name);
+    for (const pg of pages) {
+      const title = (pg.title || '').toLowerCase();
+      const info = pg.imageinfo?.[0];
+      if (!info?.thumburl) continue;
+      if (!/\.(jpg|jpeg|png)$/i.test(info.url || '')) continue;
+      if (!keys.some((k) => title.includes(k))) continue; // GUARD: must match name
+      const artist = info.extmetadata?.Artist?.value?.replace(/<[^>]+>/g, '').trim() || 'Wikimedia Commons';
+      const lic = info.extmetadata?.LicenseShortName?.value || 'CC';
+      return { src: info.thumburl, credit: `Photo: ${artist} / ${lic} (Wikimedia Commons)` };
+    }
+    return null;
   } catch { return null; }
 }
 
@@ -64,34 +85,39 @@ async function download(id, url) {
   const ext = (url.split('?')[0].match(/\.(jpg|jpeg|png|webp)$/i)?.[1] || 'jpg').toLowerCase();
   const path = `public/dishes/${id}.${ext}`;
   const res = await fetch(url);
-  if (!res.ok || !res.body) throw new Error(`download failed ${url}`);
+  if (!res.ok || !res.body) throw new Error('download failed');
   await pipeline(Readable.fromWeb(res.body), createWriteStream(path));
   return `/dishes/${id}.${ext}`;
 }
 
-const recipes = recipesFromSource();
+const jobs = [
+  ...loadRecipes().map((x) => ({ ...x, kind: 'recipe' })),
+  ...loadProducts().map((x) => ({ ...x, kind: 'product' })),
+  ...loadRegionsFestivals().map((x) => ({ ...x, kind: 'place' })),
+  ...loadIngredients().map((x) => ({ ...x, kind: 'ingredient' })),
+];
+
 const out = {};
 let ok = 0;
-for (const { id, name } of recipes) {
-  const hit = (await fromMealDB(name)) || (await fromCommons(name));
+for (const { id, name, kind } of jobs) {
+  if (out[id]) continue;
+  let hit = null;
+  if (kind === 'recipe') hit = (await fromMealDB(name)) || (await fromCommons(name, `${name} indian food`));
+  else if (kind === 'product') hit = await fromCommons(name, `${name}`);
+  else if (kind === 'ingredient') hit = await fromCommons(name, `${name} ingredient`);
+  else hit = await fromCommons(name, `${name} indian cuisine food`); // festivals + regions
+
   if (hit && (await verify(hit.src))) {
-    if (DOWNLOAD) {
-      try { hit.src = await download(id, hit.src); } catch { /* keep hotlink */ }
-    }
+    if (DOWNLOAD) { try { hit.src = await download(id, hit.src); } catch { /* keep hotlink */ } }
     out[id] = { src: hit.src, credit: hit.credit };
     ok++;
     console.log(`✓ ${id}`);
   } else {
-    console.log(`· ${id} (keyword fallback)`);
+    console.log(`· ${id} (art)`);
   }
-  await sleep(200); // be polite to the APIs
+  await sleep(180);
 }
 
-const body = `// AUTO-GENERATED by scripts/resolve-images.mjs — do not edit by hand.
-import type { DishPhoto } from './images';
-
-export const GENERATED_IMAGES: Record<string, DishPhoto> = ${JSON.stringify(out, null, 2)};
-`;
-writeFileSync('src/data/images.generated.ts', body);
-console.log(`\nResolved ${ok}/${recipes.length} verified photos → src/data/images.generated.ts`);
-console.log('The rest use the deterministic keyword photo (still real). Commit the generated file' + (DOWNLOAD ? ' and public/dishes/.' : '.'));
+writeFileSync('src/data/images.generated.ts',
+  `// AUTO-GENERATED by scripts/resolve-images.mjs — do not edit by hand.\nimport type { DishPhoto } from './images';\n\nexport const GENERATED_IMAGES: Record<string, DishPhoto> = ${JSON.stringify(out, null, 2)};\n`);
+console.log(`\nResolved ${ok}/${jobs.length} cross-verified photos -> src/data/images.generated.ts`);

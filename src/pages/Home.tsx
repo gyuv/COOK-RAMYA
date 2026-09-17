@@ -129,7 +129,7 @@ export default function Home() {
       <section className="section"><div className="container">
         <SectionHead title="Festival specials" action="All festivals" onAction={() => nav('/collections')} />
         <div className="card" style={{ display: 'flex', overflow: 'hidden' }}>
-          <div style={{ width: 130, flexShrink: 0 }}><FoodArt art={festival.art} seed={festival.id} /></div>
+          <div style={{ width: 130, flexShrink: 0 }}><DishImage id={festival.id} art={festival.art} seed={festival.id} alt={festival.name} name={festival.name} /></div>
           <div className="card-pad" style={{ flex: 1 }}>
             <span className="eyebrow">{festival.when}</span>
             <h3 style={{ fontSize: '1.2rem', margin: '4px 0' }}>{festival.name}</h3>

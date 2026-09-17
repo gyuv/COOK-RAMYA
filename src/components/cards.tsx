@@ -95,7 +95,7 @@ export function RegionCard({ region }: { region: Region }) {
   return (
     <Link to={`/regions/${region.id}`} className="recipe-card">
       <div className="thumb" style={{ aspectRatio: '16 / 10' }}>
-        <FoodArt art={region.art} seed={region.id} />
+        <DishImage id={region.id} art={region.art} seed={region.id} alt={region.name} name={region.name} />
       </div>
       <div className="rc-body">
         <div className="rc-region">{region.region}</div>
