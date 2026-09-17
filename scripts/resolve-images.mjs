@@ -24,22 +24,6 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const UA = 'RAMYA-COOK-image-resolver/1.0 (+https://github.com/gyuv/COOK-RAMYA)';
 const getJSON = (url) => fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' } }).then((r) => r.json());
 
-// One-time diagnostic probe so a single CI run reveals exactly what the APIs
-// return (status + body snippet). Remove once resolution works.
-async function probe() {
-  for (const [label, url] of [
-    ['TheMealDB', 'https://www.themealdb.com/api/json/v1/1/search.php?s=Dosa'],
-    ['Commons',  'https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrsearch=' + encodeURIComponent('Dosa food') + '&gsrlimit=3&prop=imageinfo&iiprop=url&iiurlwidth=800&format=json'],
-  ]) {
-    try {
-      const r = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' } });
-      const body = await r.text();
-      console.log(`PROBE ${label}: HTTP ${r.status} ${r.headers.get('content-type')} | ${body.slice(0, 300).replace(/\s+/g, ' ')}`);
-    } catch (e) {
-      console.log(`PROBE ${label}: THREW ${e}`);
-    }
-  }
-}
 const STOP = new Set(['style', 'the', 'a', 'with', 'and', 'of', 'dish', 'india', 'indian', 'food', 'special', 'classic', 'home', 'hotel', 'restaurant']);
 
 const tokens = (name) =>
@@ -75,17 +59,24 @@ async function fromMealDB(name) {
 // of the item's keywords, or it is rejected (prevents unrelated matches).
 async function fromCommons(name, query) {
   try {
-    const api = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrsearch=${encodeURIComponent(query)}&gsrlimit=8&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=800&format=json`;
-    const j = await getJSON(api);
+    // Build with URLSearchParams so `|` (iiprop) and spaces are encoded — an
+    // unencoded pipe makes Node's fetch throw, which silently failed every call.
+    const params = new URLSearchParams({
+      action: 'query', generator: 'search', gsrnamespace: '6', gsrsearch: query,
+      gsrlimit: '10', prop: 'imageinfo', iiprop: 'url|extmetadata', iiurlwidth: '800', format: 'json',
+    });
+    const j = await getJSON(`https://commons.wikimedia.org/w/api.php?${params.toString()}`);
     const pages = j.query?.pages ? Object.values(j.query.pages) : [];
+    // Preserve search rank (MediaWiki returns an `index` per page).
+    pages.sort((a, b) => (a.index ?? 99) - (b.index ?? 99));
     const keys = tokens(name);
     for (const pg of pages) {
       const title = (pg.title || '').toLowerCase();
       const info = pg.imageinfo?.[0];
       if (!info?.thumburl) continue;
-      if (!/\.(jpg|jpeg|png)$/i.test(info.url || '')) continue;
-      if (!keys.some((k) => title.includes(k))) continue; // GUARD: must match name
-      const artist = info.extmetadata?.Artist?.value?.replace(/<[^>]+>/g, '').trim() || 'Wikimedia Commons';
+      if (/\.(svg|pdf|webm|ogv|tif|tiff)$/i.test(info.url || '')) continue; // skip non-photos
+      if (!keys.some((k) => title.includes(k))) continue; // GUARD: title must match the item name
+      const artist = (info.extmetadata?.Artist?.value || 'Wikimedia Commons').replace(/<[^>]+>/g, '').trim();
       const lic = info.extmetadata?.LicenseShortName?.value || 'CC';
       return { src: info.thumburl, credit: `Photo: ${artist} / ${lic} (Wikimedia Commons)` };
     }
@@ -109,8 +100,6 @@ const jobs = [
   ...loadRegionsFestivals().map((x) => ({ ...x, kind: 'place' })),
   ...loadIngredients().map((x) => ({ ...x, kind: 'ingredient' })),
 ];
-
-await probe();
 
 const out = {};
 let ok = 0;
