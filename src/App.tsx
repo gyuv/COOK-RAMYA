@@ -4,6 +4,7 @@ import { Header, BottomNavigation } from './components/nav';
 import { TimerDock } from './components/cooking';
 import { ToastProvider, Skeleton } from './components/ui';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { ScrollProgress, useGlobalMotionEffects } from './components/anim';
 import { useStore } from './store/useStore';
 import Home from './pages/Home';
 
@@ -57,6 +58,7 @@ export default function App() {
   const loc = useLocation();
   const reduceMotion = useStore((s) => s.prefs.reduceMotion);
   const immersive = loc.pathname.startsWith('/guided/');
+  useGlobalMotionEffects();
 
   // Honour the reduced-motion preference app-wide.
   useEffect(() => {
@@ -67,6 +69,7 @@ export default function App() {
   return (
     <ToastProvider>
       <ScrollToTop />
+      {!immersive && <ScrollProgress />}
       <div className="app-shell">
         {!immersive && <Header />}
         <ErrorBoundary>

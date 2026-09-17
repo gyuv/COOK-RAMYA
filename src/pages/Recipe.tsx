@@ -8,6 +8,7 @@ import { relatedTo, completeMeal } from '../lib/recommend';
 import { useStore } from '../store/useStore';
 import { useSeo, useRecipeJsonLd } from '../hooks/useSeo';
 import { FoodArt } from '../components/FoodArt';
+import { DishImage } from '../components/DishImage';
 import { RecipeCard, SaveButton, Scroller } from '../components/cards';
 import { DietDot, Modal, SectionHead, EmptyState, useToast } from '../components/ui';
 import { IngredientPanel } from '../components/IngredientPanel';
@@ -52,7 +53,7 @@ export default function Recipe() {
     <div className="fade-up">
       {/* Hero */}
       <div style={{ position: 'relative' }}>
-        <div style={{ aspectRatio: '16 / 9', maxHeight: 340, overflow: 'hidden' }}><FoodArt art={recipe.art} seed={recipe.id} /></div>
+        <div style={{ aspectRatio: '16 / 9', maxHeight: 340, overflow: 'hidden' }}><DishImage id={recipe.id} art={recipe.art} seed={recipe.id} alt={recipe.name} name={recipe.name} showCredit eager /></div>
         <div style={{ position: 'absolute', top: 12, left: 12 }}><button onClick={() => nav(-1)} className="btn btn-ghost" style={{ padding: '8px 14px', background: 'rgba(255,255,255,0.9)' }}>← Back</button></div>
         <div style={{ position: 'absolute', top: 12, right: 12 }}><SaveButton id={recipe.id} name={recipe.name} /></div>
       </div>
@@ -84,7 +85,7 @@ export default function Recipe() {
 
           {/* CTAs */}
           <div className="row wrap gap8" style={{ marginTop: 18 }}>
-            <Link to={`/guided/${recipe.slug}`} className="btn btn-primary btn-lg" onClick={() => useStore.getState().startSession(recipe.id, servings)}>▶ Start Cooking</Link>
+            <Link to={`/guided/${recipe.slug}`} className="btn btn-primary btn-lg btn-glow" onClick={() => useStore.getState().startSession(recipe.id, servings)}>▶ Start Cooking</Link>
             <button className="btn btn-ghost" onClick={() => { addRecipeToShopping(recipe.id, servings); toast('Ingredients added to shopping list'); }}>🛒 Shopping list</button>
             <button className="btn btn-ghost" onClick={() => setMealModal(true)}>📅 Add to meal plan</button>
             <button className="btn btn-ghost" onClick={() => { navigator.clipboard?.writeText(location.href).then(() => toast('Link copied'), () => toast('Copy not available')); }}>↗ Share</button>
@@ -121,7 +122,7 @@ export default function Recipe() {
                     <li key={group + i}>
                       <button onClick={() => setIngModal(ing.item)} style={{ width: '100%', display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', padding: '10px 8px', border: 'none', borderBottom: '1px solid var(--line)', background: 'transparent', cursor: 'pointer', textAlign: 'left' }}>
                         <span className="row gap8"><span style={{ width: 30, height: 30, borderRadius: 8, overflow: 'hidden', flexShrink: 0 }}><FoodArt art="other" seed={ing.item} /></span><span style={{ fontSize: '0.95rem' }}>{ing.item}{ing.note ? <span className="muted"> · {ing.note}</span> : null}</span></span>
-                        <span style={{ fontWeight: 600, whiteSpace: 'nowrap', color: ing.looselyScaled ? 'var(--ink-3)' : 'var(--ink)' }}>{ing.displayQty} {ing.unit}{ing.qty == null ? 'to taste' : ''}</span>
+                        <span key={`${servings}-${ing.displayQty}`} className="qty-flash" style={{ fontWeight: 600, whiteSpace: 'nowrap', padding: '2px 6px', color: ing.looselyScaled ? 'var(--ink-3)' : 'var(--ink)' }}>{ing.displayQty} {ing.unit}{ing.qty == null ? 'to taste' : ''}</span>
                       </button>
                     </li>
                   ))}

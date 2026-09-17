@@ -1,22 +1,32 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { Recipe, Product, Region, Technique } from '../data/types';
 import { FoodArt } from './FoodArt';
+import { DishImage } from './DishImage';
 import { DietDot } from './ui';
 import { useStore } from '../store/useStore';
 import { useToast } from './ui';
 import { formatMinutes } from '../hooks/useTick';
+import { Reveal } from './Reveal';
 
 export function SaveButton({ id, name }: { id: string; name?: string }) {
   const saved = useStore((s) => s.saved.includes(id));
   const toggle = useStore((s) => s.toggleSave);
   const toast = useToast();
+  const [burst, setBurst] = useState(false);
   return (
     <button
       className={`save-btn ${saved ? 'saved' : ''}`}
       aria-pressed={saved}
       aria-label={saved ? `Remove ${name ?? 'recipe'} from saved` : `Save ${name ?? 'recipe'}`}
-      onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggle(id); toast(saved ? 'Removed from saved' : 'Saved to your cookbook'); }}
+      onClick={(e) => {
+        e.preventDefault(); e.stopPropagation();
+        if (!saved) { setBurst(true); window.setTimeout(() => setBurst(false), 520); }
+        toggle(id);
+        toast(saved ? 'Removed from saved' : 'Saved to your cookbook');
+      }}
     >
+      {burst && <span className="heart-burst" aria-hidden="true" />}
       {saved ? '♥' : '♡'}
     </button>
   );
@@ -26,7 +36,7 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
   return (
     <Link to={`/recipes/${recipe.slug}`} className="recipe-card">
       <div className="thumb">
-        <FoodArt art={recipe.art} seed={recipe.id} />
+        <DishImage id={recipe.id} art={recipe.art} seed={recipe.id} alt={recipe.name} name={recipe.name} />
         <SaveButton id={recipe.id} name={recipe.name} />
         {recipe.styleLabel && <span className="pill pill-terra badge-tl">{recipe.styleLabel}</span>}
       </div>
@@ -47,7 +57,7 @@ export function VariationCard({ recipe }: { recipe: Recipe }) {
   return (
     <Link to={`/recipes/${recipe.slug}`} className="recipe-card">
       <div className="thumb" style={{ aspectRatio: '16 / 10' }}>
-        <FoodArt art={recipe.art} seed={recipe.id} />
+        <DishImage id={recipe.id} art={recipe.art} seed={recipe.id} alt={recipe.name} name={recipe.name} />
         <SaveButton id={recipe.id} name={recipe.name} />
       </div>
       <div className="rc-body">
@@ -70,7 +80,7 @@ export function ProductCard({ product }: { product: Product }) {
   return (
     <Link to={`/products/${product.slug}`} className="recipe-card">
       <div className="thumb" style={{ aspectRatio: '4 / 3' }}>
-        <FoodArt art={product.art} seed={product.id} />
+        <DishImage id={product.id} art={product.art} seed={product.id} alt={product.name} name={product.name} />
       </div>
       <div className="rc-body">
         <div className="rc-region">{product.category}</div>
@@ -85,7 +95,7 @@ export function RegionCard({ region }: { region: Region }) {
   return (
     <Link to={`/regions/${region.id}`} className="recipe-card">
       <div className="thumb" style={{ aspectRatio: '16 / 10' }}>
-        <FoodArt art={region.art} seed={region.id} />
+        <DishImage id={region.id} art={region.art} seed={region.id} alt={region.name} name={region.name} />
       </div>
       <div className="rc-body">
         <div className="rc-region">{region.region}</div>
@@ -111,7 +121,8 @@ export function TechniqueCard({ technique }: { technique: Technique }) {
   );
 }
 
-// Horizontal scroller wrapper for card rows.
+// Horizontal scroller wrapper for card rows — reveals and staggers its cards
+// as it scrolls into view.
 export function Scroller({ children }: { children: React.ReactNode }) {
-  return <div className="hscroll">{children}</div>;
+  return <Reveal as="div" className="hscroll" stagger>{children}</Reveal>;
 }

@@ -2,7 +2,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { SearchBar } from '../components/SearchBar';
 import { RecipeCard, Scroller } from '../components/cards';
 import { FoodArt } from '../components/FoodArt';
+import { DishImage } from '../components/DishImage';
 import { SectionHead } from '../components/ui';
+import { Reveal } from '../components/Reveal';
+import { CountUp, TypeCycle, Marquee } from '../components/anim';
+import { RECIPES } from '../data/recipes';
 import { useSeo } from '../hooks/useSeo';
 import { useStore } from '../store/useStore';
 import { popularIn, quickRecipes, recipesByIds, recipeById, allFamilies } from '../data/recipes';
@@ -43,15 +47,25 @@ export default function Home() {
   return (
     <div className="fade-up">
       {/* Hero */}
-      <section style={{ background: 'linear-gradient(180deg, #fbf7f0 0%, var(--ivory) 100%)', paddingTop: 30, paddingBottom: 30 }}>
-        <div className="container center" style={{ maxWidth: 760 }}>
+      <section style={{ position: 'relative', background: 'linear-gradient(180deg, #fbf7f0 0%, var(--ivory) 100%)', paddingTop: 30, paddingBottom: 30, overflow: 'hidden' }}>
+        <div className="hero-blobs" aria-hidden="true"><span /><span /><span /></div>
+        <div className="container center" style={{ maxWidth: 760, position: 'relative', zIndex: 1 }}>
           <span className="eyebrow">Amma's wisdom · Chef guidance · Modern tech</span>
-          <h1 style={{ fontSize: 'clamp(2rem, 6vw, 3.2rem)', margin: '10px 0 18px', lineHeight: 1.05 }}>What are you cooking today?</h1>
+          <h1 style={{ fontSize: 'clamp(2rem, 6vw, 3.2rem)', margin: '10px 0 6px', lineHeight: 1.05 }}>What are you <span className="gradient-text">cooking</span> today?</h1>
+          <p className="muted" style={{ fontSize: '1.05rem', marginBottom: 16 }}>Tonight, maybe&nbsp;<TypeCycle words={['Masala Dosa', 'Ven Pongal', 'Chicken Biryani', 'Sambar', 'Kothu Parotta', 'Maggi']} /></p>
           <SearchBar variant="hero" />
           <div className="row wrap gap8" style={{ justifyContent: 'center', marginTop: 16 }}>
             {POPULAR_SEARCHES.slice(0, 6).map((p) => (
               <button key={p} className="chip" onClick={() => nav(`/search?q=${encodeURIComponent(p)}`)}>{p}</button>
             ))}
+          </div>
+          <div className="row" style={{ justifyContent: 'center', gap: 28, marginTop: 22, fontFamily: 'var(--font-display)' }}>
+            <span><strong style={{ fontSize: '1.5rem' }}><CountUp to={RECIPES.length} suffix="+" /></strong><span className="muted" style={{ display: 'block', fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'var(--font-body)' }}>Recipes</span></span>
+            <span><strong style={{ fontSize: '1.5rem' }}><CountUp to={25} suffix="+" /></strong><span className="muted" style={{ display: 'block', fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'var(--font-body)' }}>Maggi ways</span></span>
+            <span><strong style={{ fontSize: '1.5rem' }}><CountUp to={7} /></strong><span className="muted" style={{ display: 'block', fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'var(--font-body)' }}>Regions</span></span>
+          </div>
+          <div style={{ marginTop: 18 }}>
+            <Marquee>{['Idli', 'Dosa', 'Sambar', 'Rasam', 'Biryani', 'Pongal', 'Chutney', 'Payasam', 'Vada', 'Parotta', 'Filter Coffee', 'Avial'].map((t) => <span key={t} className="pill" style={{ background: 'var(--surface)' }}>{t}</span>)}</Marquee>
           </div>
         </div>
       </section>
@@ -60,7 +74,7 @@ export default function Home() {
       {cont && session && (
         <section className="section"><div className="container">
           <div className="card" style={{ display: 'flex', overflow: 'hidden', alignItems: 'stretch' }}>
-            <div style={{ width: 120, flexShrink: 0 }}><FoodArt art={cont.art} seed={cont.id} /></div>
+            <div style={{ width: 120, flexShrink: 0 }}><DishImage id={cont.id} art={cont.art} seed={cont.id} alt={cont.name} name={cont.name} /></div>
             <div className="card-pad" style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 6 }}>
               <span className="eyebrow" style={{ color: 'var(--green)' }}>Continue cooking</span>
               <h3 style={{ fontSize: '1.2rem' }}>{cont.name}</h3>
@@ -80,7 +94,7 @@ export default function Home() {
       {/* 50 ways to make... family spotlights */}
       <section className="section"><div className="container">
         <SectionHead title="50 ways to make…" action="Browse dishes" onAction={() => nav('/discover')} />
-        <div className="grid grid-auto-lg">
+        <Reveal as="div" className="grid grid-auto-lg" stagger>
           {bigFamilies.map((f) => (
             <Link key={f.dishType} to={`/dishes/${f.dishType.toLowerCase().replace(/\s+/g, '-')}`} className="recipe-card">
               <div className="thumb" style={{ aspectRatio: '16 / 9' }}><FoodArt art={f.members[0].art} seed={f.dishType} /></div>
@@ -90,7 +104,7 @@ export default function Home() {
               </div>
             </Link>
           ))}
-        </div>
+        </Reveal>
       </div></section>
 
       <Row title="Quick Indian meals" action="More" to="/discover" recipes={quickRecipes(25, 10)} />
@@ -98,12 +112,12 @@ export default function Home() {
       {/* Cook with what you have CTA */}
       <section className="section"><div className="container">
         <div className="grid grid-2" style={{ gap: 14 }}>
-          <Link to="/what-can-i-cook" className="card card-pad" style={{ background: 'linear-gradient(135deg,#eef4ec,#e2efe0)', display: 'grid', gap: 6 }}>
+          <Link to="/what-can-i-cook" className="card card-pad spotlight tilt" style={{ background: 'linear-gradient(135deg,#eef4ec,#e2efe0)', display: 'grid', gap: 6 }}>
             <span style={{ fontSize: '1.8rem' }} aria-hidden="true">🧺</span>
             <h3 style={{ fontSize: '1.15rem' }}>Cook with what you have</h3>
             <p className="muted" style={{ fontSize: '0.86rem' }}>Tell us your ingredients and we'll find matching recipes.</p>
           </Link>
-          <Link to="/chef" className="card card-pad" style={{ background: 'linear-gradient(135deg,#f7ebe3,#f5ddcf)', display: 'grid', gap: 6 }}>
+          <Link to="/chef" className="card card-pad spotlight tilt" style={{ background: 'linear-gradient(135deg,#f7ebe3,#f5ddcf)', display: 'grid', gap: 6 }}>
             <span style={{ fontSize: '1.8rem' }} aria-hidden="true">👩‍🍳</span>
             <h3 style={{ fontSize: '1.15rem' }}>Ask RAMYA AI Chef</h3>
             <p className="muted" style={{ fontSize: '0.86rem' }}>Substitutions, fixes and cooking help — right in your kitchen.</p>
@@ -115,7 +129,7 @@ export default function Home() {
       <section className="section"><div className="container">
         <SectionHead title="Festival specials" action="All festivals" onAction={() => nav('/collections')} />
         <div className="card" style={{ display: 'flex', overflow: 'hidden' }}>
-          <div style={{ width: 130, flexShrink: 0 }}><FoodArt art={festival.art} seed={festival.id} /></div>
+          <div style={{ width: 130, flexShrink: 0 }}><DishImage id={festival.id} art={festival.art} seed={festival.id} alt={festival.name} name={festival.name} /></div>
           <div className="card-pad" style={{ flex: 1 }}>
             <span className="eyebrow">{festival.when}</span>
             <h3 style={{ fontSize: '1.2rem', margin: '4px 0' }}>{festival.name}</h3>

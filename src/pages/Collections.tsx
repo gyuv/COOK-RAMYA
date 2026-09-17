@@ -3,7 +3,7 @@ import { FESTIVALS } from '../data/regions';
 import { recipesByIds, quickRecipes, bySeason } from '../data/recipes';
 import { seasonNow } from '../lib/recommend';
 import { RecipeCard, Scroller } from '../components/cards';
-import { FoodArt } from '../components/FoodArt';
+import { DishImage } from '../components/DishImage';
 import { EmptyState, SectionHead } from '../components/ui';
 import { useSeo } from '../hooks/useSeo';
 
@@ -30,7 +30,7 @@ export function Collections() {
       <div className="grid grid-auto-lg" style={{ marginBottom: 8 }}>
         {FESTIVALS.map((f) => (
           <Link key={f.id} to={`/festivals/${f.id}`} className="recipe-card">
-            <div className="thumb" style={{ aspectRatio: '16 / 9' }}><FoodArt art={f.art} seed={f.id} /></div>
+            <div className="thumb" style={{ aspectRatio: '16 / 9' }}><DishImage id={f.id} art={f.art} seed={f.id} alt={f.name} name={f.name} /></div>
             <div className="rc-body"><div className="rc-region">{f.when}</div><div className="rc-title" style={{ fontSize: '1rem' }}>{f.name}</div><div className="muted" style={{ fontSize: '0.8rem', lineHeight: 1.35 }}>{f.blurb}</div></div>
           </Link>
         ))}
@@ -54,7 +54,7 @@ export function FestivalDetail() {
   const recipes = recipesByIds(festival.recipeIds);
   return (
     <div className="fade-up">
-      <div style={{ position: 'relative', aspectRatio: '16 / 7', maxHeight: 240, overflow: 'hidden' }}><FoodArt art={festival.art} seed={festival.id} /></div>
+      <div style={{ position: 'relative', aspectRatio: '16 / 7', maxHeight: 240, overflow: 'hidden' }}><DishImage id={festival.id} art={festival.art} seed={festival.id} alt={festival.name} name={festival.name} showCredit eager /></div>
       <div className="container" style={{ marginTop: -24, position: 'relative' }}>
         <div className="card card-pad">
           <span className="eyebrow">{festival.region} · {festival.when}</span>
