@@ -2,7 +2,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { productBySlug, productById } from '../data/products';
 import { recipesByIds, familyFor } from '../data/recipes';
 import { RecipeCard, Scroller } from '../components/cards';
-import { FoodArt } from '../components/FoodArt';
+import { DishImage } from '../components/DishImage';
 import { EmptyState, SectionHead } from '../components/ui';
 import { useSeo } from '../hooks/useSeo';
 
@@ -24,7 +24,7 @@ export default function Product() {
 
   return (
     <div className="fade-up">
-      <div style={{ position: 'relative', aspectRatio: '16 / 8', maxHeight: 300, overflow: 'hidden' }}><FoodArt art={product.art} seed={product.id} /></div>
+      <div style={{ position: 'relative', aspectRatio: '16 / 8', maxHeight: 300, overflow: 'hidden' }}><DishImage id={product.id} art={product.art} seed={product.id} alt={product.name} showCredit eager /></div>
       <div className="container" style={{ marginTop: -28, position: 'relative' }}>
         <div className="card card-pad">
           <span className="eyebrow">{product.category}</span>

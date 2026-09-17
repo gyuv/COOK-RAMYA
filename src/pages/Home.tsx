@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { SearchBar } from '../components/SearchBar';
 import { RecipeCard, Scroller } from '../components/cards';
 import { FoodArt } from '../components/FoodArt';
+import { DishImage } from '../components/DishImage';
 import { SectionHead } from '../components/ui';
 import { useSeo } from '../hooks/useSeo';
 import { useStore } from '../store/useStore';
@@ -60,7 +61,7 @@ export default function Home() {
       {cont && session && (
         <section className="section"><div className="container">
           <div className="card" style={{ display: 'flex', overflow: 'hidden', alignItems: 'stretch' }}>
-            <div style={{ width: 120, flexShrink: 0 }}><FoodArt art={cont.art} seed={cont.id} /></div>
+            <div style={{ width: 120, flexShrink: 0 }}><DishImage id={cont.id} art={cont.art} seed={cont.id} alt={cont.name} /></div>
             <div className="card-pad" style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 6 }}>
               <span className="eyebrow" style={{ color: 'var(--green)' }}>Continue cooking</span>
               <h3 style={{ fontSize: '1.2rem' }}>{cont.name}</h3>

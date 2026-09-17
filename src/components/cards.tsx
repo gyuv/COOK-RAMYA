@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { Recipe, Product, Region, Technique } from '../data/types';
 import { FoodArt } from './FoodArt';
+import { DishImage } from './DishImage';
 import { DietDot } from './ui';
 import { useStore } from '../store/useStore';
 import { useToast } from './ui';
@@ -26,7 +27,7 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
   return (
     <Link to={`/recipes/${recipe.slug}`} className="recipe-card">
       <div className="thumb">
-        <FoodArt art={recipe.art} seed={recipe.id} />
+        <DishImage id={recipe.id} art={recipe.art} seed={recipe.id} alt={recipe.name} />
         <SaveButton id={recipe.id} name={recipe.name} />
         {recipe.styleLabel && <span className="pill pill-terra badge-tl">{recipe.styleLabel}</span>}
       </div>
@@ -47,7 +48,7 @@ export function VariationCard({ recipe }: { recipe: Recipe }) {
   return (
     <Link to={`/recipes/${recipe.slug}`} className="recipe-card">
       <div className="thumb" style={{ aspectRatio: '16 / 10' }}>
-        <FoodArt art={recipe.art} seed={recipe.id} />
+        <DishImage id={recipe.id} art={recipe.art} seed={recipe.id} alt={recipe.name} />
         <SaveButton id={recipe.id} name={recipe.name} />
       </div>
       <div className="rc-body">
@@ -70,7 +71,7 @@ export function ProductCard({ product }: { product: Product }) {
   return (
     <Link to={`/products/${product.slug}`} className="recipe-card">
       <div className="thumb" style={{ aspectRatio: '4 / 3' }}>
-        <FoodArt art={product.art} seed={product.id} />
+        <DishImage id={product.id} art={product.art} seed={product.id} alt={product.name} />
       </div>
       <div className="rc-body">
         <div className="rc-region">{product.category}</div>
