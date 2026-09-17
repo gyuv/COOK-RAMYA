@@ -24,7 +24,7 @@ export default function Product() {
 
   return (
     <div className="fade-up">
-      <div style={{ position: 'relative', aspectRatio: '16 / 8', maxHeight: 300, overflow: 'hidden' }}><DishImage id={product.id} art={product.art} seed={product.id} alt={product.name} showCredit eager /></div>
+      <div style={{ position: 'relative', aspectRatio: '16 / 8', maxHeight: 300, overflow: 'hidden' }}><DishImage id={product.id} art={product.art} seed={product.id} alt={product.name} name={product.name} showCredit eager /></div>
       <div className="container" style={{ marginTop: -28, position: 'relative' }}>
         <div className="card card-pad">
           <span className="eyebrow">{product.category}</span>

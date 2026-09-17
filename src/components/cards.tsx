@@ -36,7 +36,7 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
   return (
     <Link to={`/recipes/${recipe.slug}`} className="recipe-card">
       <div className="thumb">
-        <DishImage id={recipe.id} art={recipe.art} seed={recipe.id} alt={recipe.name} />
+        <DishImage id={recipe.id} art={recipe.art} seed={recipe.id} alt={recipe.name} name={recipe.name} />
         <SaveButton id={recipe.id} name={recipe.name} />
         {recipe.styleLabel && <span className="pill pill-terra badge-tl">{recipe.styleLabel}</span>}
       </div>
@@ -57,7 +57,7 @@ export function VariationCard({ recipe }: { recipe: Recipe }) {
   return (
     <Link to={`/recipes/${recipe.slug}`} className="recipe-card">
       <div className="thumb" style={{ aspectRatio: '16 / 10' }}>
-        <DishImage id={recipe.id} art={recipe.art} seed={recipe.id} alt={recipe.name} />
+        <DishImage id={recipe.id} art={recipe.art} seed={recipe.id} alt={recipe.name} name={recipe.name} />
         <SaveButton id={recipe.id} name={recipe.name} />
       </div>
       <div className="rc-body">
@@ -80,7 +80,7 @@ export function ProductCard({ product }: { product: Product }) {
   return (
     <Link to={`/products/${product.slug}`} className="recipe-card">
       <div className="thumb" style={{ aspectRatio: '4 / 3' }}>
-        <DishImage id={product.id} art={product.art} seed={product.id} alt={product.name} />
+        <DishImage id={product.id} art={product.art} seed={product.id} alt={product.name} name={product.name} />
       </div>
       <div className="rc-body">
         <div className="rc-region">{product.category}</div>

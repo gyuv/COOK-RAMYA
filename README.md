@@ -53,7 +53,7 @@ src/
 
 **Design system** — warm ivory / white / charcoal with terracotta & olive-green accents, Fraunces (display) + Inter (UI), consistent tokens. No neon, no excessive gradients.
 
-**Imagery** — all food/product/region art is **procedural inline SVG** keyed by dish type. No broken images, no hotlinked or copyrighted assets, fully offline. Swap `FoodArt` for licensed photography later without touching data or pages.
+**Imagery** — every dish resolves to a **real photo** through a cascade (`DishImage`): a curated exact photo (`src/data/images.ts`) → a deterministic keyword-matched CC food photo (LoremFlickr, covers all 140 dishes, no API key) → procedural inline SVG art only if the network image can't load. So no dish is ever blank or a dummy, and there are no broken-image icons. Run `npm run resolve-images` (with internet) to bake in verified, self-hosted licensed photos from TheMealDB/Wikimedia Commons (`--download` self-hosts to `public/dishes/` with attribution); the generated map overrides the fallback. Deliberately not Pinterest/Google scraping (copyrighted, blocks hotlinking).
 
 **PWA** — web manifest, SVG icons, theme color, standalone mode, and a service worker that precaches the app shell so cooking works with weak/no connectivity.
 

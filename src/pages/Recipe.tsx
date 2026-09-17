@@ -53,7 +53,7 @@ export default function Recipe() {
     <div className="fade-up">
       {/* Hero */}
       <div style={{ position: 'relative' }}>
-        <div style={{ aspectRatio: '16 / 9', maxHeight: 340, overflow: 'hidden' }}><DishImage id={recipe.id} art={recipe.art} seed={recipe.id} alt={recipe.name} showCredit eager /></div>
+        <div style={{ aspectRatio: '16 / 9', maxHeight: 340, overflow: 'hidden' }}><DishImage id={recipe.id} art={recipe.art} seed={recipe.id} alt={recipe.name} name={recipe.name} showCredit eager /></div>
         <div style={{ position: 'absolute', top: 12, left: 12 }}><button onClick={() => nav(-1)} className="btn btn-ghost" style={{ padding: '8px 14px', background: 'rgba(255,255,255,0.9)' }}>← Back</button></div>
         <div style={{ position: 'absolute', top: 12, right: 12 }}><SaveButton id={recipe.id} name={recipe.name} /></div>
       </div>
